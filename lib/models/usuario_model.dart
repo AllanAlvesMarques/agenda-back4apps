@@ -3,15 +3,15 @@ import 'dart:convert';
 
 class UsuarioModel {
   String? objectId;
-  String? username;
-  String? login;
-  String? password;
-  bool permanecerLogado = false;
+  String username;
+  String login;
+  String password;
+  bool permanecerLogado;
   UsuarioModel({
     this.objectId,
-    this.username,
-    this.login,
-    this.password,
+    required this.username,
+    required this.login,
+    required this.password,
     required this.permanecerLogado,
   });
 
@@ -44,10 +44,10 @@ class UsuarioModel {
   factory UsuarioModel.fromMap(Map<String, dynamic> map) {
     return UsuarioModel(
       objectId: map['objectId'] != null ? map['objectId'] as String : null,
-      username: map['username'] != null ? map['username'] as String : null,
-      login: map['login'] != null ? map['login'] as String : null,
-      password: map['password'] != null ? map['password'] as String : null,
-      permanecerLogado: map['permanecerLogado'] ?? false,
+      username: map['username'] as String,
+      login: map['login'] as String,
+      password: map['password'] != null ? map['objectId'] as String : '',
+      permanecerLogado: map['permanecerLogado'] as bool,
     );
   }
 

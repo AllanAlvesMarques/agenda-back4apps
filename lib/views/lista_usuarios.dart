@@ -47,7 +47,7 @@ class _ListaUsuariosState extends State<ListaUsuarios> {
           return ListView.builder(
             itemCount: controller.usuarios.length,
             itemBuilder: (BuildContext context, int index) {
-              return _listaUsuarios(context, controller.usuarios[index]);
+              return _listaUsuarios(context, controller.usuarios[index], index);
             },
           );
         },
@@ -55,9 +55,9 @@ class _ListaUsuariosState extends State<ListaUsuarios> {
     );
   }
 
-  _listaUsuarios(BuildContext context, UsuarioModel usuario) {
+  _listaUsuarios(BuildContext context, UsuarioModel usuario, int index) {
     return ListTile(
-      title: Text(usuario.username!),
+      title: Text(usuario.username),
       leading: const Icon(Icons.person, size: 45),
       trailing: SizedBox(
         width: 100,
@@ -101,6 +101,7 @@ class _ListaUsuariosState extends State<ListaUsuarios> {
                               Navigator.pop(context, true);
                             }
                             await usuariosDB.deleteUsuario(usuario);
+                            snackBarErro();
                           },
                         ),
                       ],
@@ -111,6 +112,19 @@ class _ListaUsuariosState extends State<ListaUsuarios> {
             )
           ],
         ),
+      ),
+    );
+  }
+
+  Widget snackBarErro() {
+    return SnackBar(
+      backgroundColor: Colors.red,
+      content: Text('a'),
+      action: SnackBarAction(
+        label: 'Ok',
+        onPressed: () {
+          // Some code to undo the change.
+        },
       ),
     );
   }

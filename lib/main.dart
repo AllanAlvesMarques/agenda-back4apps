@@ -57,17 +57,4 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
-
-  verificaPermaneceLogado(context) async {
-    await Provider.of<DioUsuariosDatabaseController>(context, listen: false)
-        .getUsuarios();
-    List usuarios =
-        Provider.of<DioUsuariosDatabaseController>(context, listen: false)
-            .usuarios;
-    for (var usuario in usuarios) {
-      if (usuario.permanecerLogado == true) {
-        Navigator.of(context).pushNamed(AppRoutes.listaContatos);
-      }
-    }
-  }
 }

@@ -20,7 +20,7 @@ class _LoginState extends State<Login> {
   List listaUsuarios = [];
   UsuarioModel? valueChoose;
   late TextEditingController senhaController;
-  bool permanecerLogado = false;
+  bool usuarioPermanecerLogado = false;
 
   @override
   void initState() {
@@ -33,12 +33,51 @@ class _LoginState extends State<Login> {
     super.didChangeDependencies();
     usuariosDB =
         Provider.of<DioUsuariosDatabaseController>(context, listen: false);
-    await atualizarListaUsuarios();
+    Provider.of<DioUsuariosDatabaseController>(context, listen: false)
+        .addListener(exibirMsgErro);
+
+    await validarUsuarioLogado(context);
+    atualizarListaUsuarios();
   }
 
-  atualizarListaUsuarios() async {
-    await usuariosDB.getUsuarios();
+  exibirMsgErro() {
+    if (usuariosDB.erroMsg.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            usuariosDB.erroMsg,
+            textScaleFactor: 1.2,
+          ),
+        ),
+      );
+    }
+  }
 
+  @override
+  void dispose() {
+    Provider.of<DioUsuariosDatabaseController>(context, listen: false)
+        .removeListener(exibirMsgErro);
+    super.dispose();
+  }
+
+  validarUsuarioLogado(BuildContext context) async {
+    await Provider.of<DioUsuariosDatabaseController>(context, listen: false)
+        .getUsuarios();
+    if (!mounted) return;
+    List usuarios =
+        Provider.of<DioUsuariosDatabaseController>(context, listen: false)
+            .usuarios;
+    for (var usuario in usuarios) {
+      if (usuario.permanecerLogado == true) {
+        usuariosDB.usuarioLogado = usuario;
+        Navigator.of(context).pushNamedAndRemoveUntil(
+            AppRoutes.listaContatos, (Route<dynamic> route) => false);
+      }
+    }
+  }
+
+  atualizarListaUsuarios() {
     setState(() {
       listaUsuarios = usuariosDB.usuarios;
       valueChoose = null;
@@ -128,11 +167,11 @@ class _LoginState extends State<Login> {
                         style: TextStyle(fontSize: 16),
                       ),
                       Switch(
-                        value: permanecerLogado,
+                        value: usuarioPermanecerLogado,
                         onChanged: (value) {
                           setState(
                             () {
-                              permanecerLogado = value;
+                              usuarioPermanecerLogado = value;
                             },
                           );
                         },
@@ -149,14 +188,14 @@ class _LoginState extends State<Login> {
                           return listaUsuarios.isNotEmpty
                               ? ElevatedButton(
                                   onPressed: () async {
-                                    await usuariosDB.login(
-                                        valueChoose!.username!,
-                                        senhaController.text);
                                     final isValid =
                                         _form.currentState?.validate();
 
                                     if (isValid!) {
-                                      entranoapp();
+                                      await usuariosDB
+                                          .login(valueChoose!.username,
+                                              senhaController.text)
+                                          .then((value) => entranoapp());
                                     }
                                   },
                                   child: const Text(
@@ -173,7 +212,10 @@ class _LoginState extends State<Login> {
                                           return CadastrarAlterarUsuario(null);
                                         },
                                       ),
-                                    ).then((value) => atualizarListaUsuarios());
+                                    ).then((value) async {
+                                      await usuariosDB.getUsuarios();
+                                      atualizarListaUsuarios();
+                                    });
                                   },
                                   child: const Text(
                                     'Cadastrar',
@@ -193,13 +235,13 @@ class _LoginState extends State<Login> {
     );
   }
 
-  void entranoapp() async {
+  entranoapp() async {
     Navigator.of(context).pushNamed(AppRoutes.listaContatos).then(
       (_) {
         atualizarListaUsuarios();
       },
     );
-    valueChoose!.permanecerLogado = permanecerLogado;
+    valueChoose!.permanecerLogado = usuarioPermanecerLogado;
     usuariosDB.usuarioLogado = valueChoose;
     await usuariosDB.updateUsuario(valueChoose!);
   }

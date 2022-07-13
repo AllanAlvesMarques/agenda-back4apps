@@ -3,10 +3,11 @@ import 'package:agenda/models/usuario_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+// ignore: must_be_immutable
 class CadastrarAlterarUsuario extends StatefulWidget {
   CadastrarAlterarUsuario(this.usuario, {Key? key}) : super(key: key);
 
-  UsuarioModel? usuario;
+  late UsuarioModel? usuario;
 
   @override
   State<CadastrarAlterarUsuario> createState() =>
@@ -21,7 +22,8 @@ class _CadastrarAlterarUsuarioState extends State<CadastrarAlterarUsuario> {
     super.didChangeDependencies();
     usuariosDB =
         Provider.of<DioUsuariosDatabaseController>(context, listen: false);
-    widget.usuario ??= UsuarioModel(permanecerLogado: false);
+    widget.usuario ??= UsuarioModel(
+        username: '', login: '', password: '', permanecerLogado: false);
   }
 
   late String? senha1;
@@ -163,11 +165,11 @@ class _CadastrarAlterarUsuarioState extends State<CadastrarAlterarUsuario> {
   }
 
   Future<void> salvaUsuario(BuildContext context, UsuarioModel usuario) async {
-    Navigator.pop(context, usuario);
     if (usuario.objectId == null) {
       await usuariosDB.adicionarUsuario(usuario);
     } else {
       await usuariosDB.updateUsuario(usuario);
     }
+    Navigator.pop(context, usuario);
   }
 }
